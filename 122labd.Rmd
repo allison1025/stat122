@@ -1,0 +1,93 @@
+---
+title: "122labd"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1.)
+a.) To see if the interaction between Lot and Cut is significant, we fit a model that includes an interaction term for Lot and Cut and check its p-value.
+```{r}
+insulate <- read.table('/Users/206660252/Desktop/insulate.txt', header = TRUE)
+insulate$Lot <- as.factor(insulate$Lot)
+insulate$Cut <- as.factor(insulate$Cut)
+insulate_fit <- aov(insulate$Strength ~ insulate$Lot * insulate$Cut)
+summary(insulate_fit)
+```
+From our output, the interaction is significant because the interaction term's p-value, which is 0.0095, is less than $\alpha$ significance level of 0.05, so we would reject H0, which claims that there is no significant interaction between Lot and Cut.
+
+b.) To see the effect that Lot has on the comparison between Cuts, we use an interaction plot.
+```{r}
+interaction.plot(insulate$Lot,insulate$Cut, insulate$Strength, xlab = "Cut Type", ylab = "Mean Strength", main = "Cut type and Lot type on Mean Strength")
+```
+From our plot, we see that Lots 1, 3, and 5 had increased mean strength with a length cut type, while for Lots 2 and 4, its mean strength increased with a cross cut type. 
+
+c.) To look at the interaction model's residuals, we plot a histogram and a fitted-vs.-residuals graph, and check for violated assumptions.
+```{R}
+hist(resid(insulate_fit), breaks = 20, xlab = "Residuals", main = "Interaction Model's Residual Histogram")
+```
+```{R}
+plot(fitted(insulate_fit),resid(insulate_fit), xlab = "Fitted Values", ylab = "Residual Values", main = "Interaction Model's Fitted vs Residual Values")
+```
+From the graphs, it seems like the ANOVA assumptions are not violated. For the histogram, there aren't outliers and shape of the distribution is symmetric, and for the fitted vs. residual values graph, the shape of the points are distributed outward in a fan-like shape so the residual variance seems to stay constant, which meets the constant variance assumption.
+
+2.)
+a.) To estimate each of the model's main effects and all of the two-way interactions, we construct 10 vectors of +1 and −1 values corresponding to the orthogonal coding.
+```{r}
+jet <- read.csv('/Users/206660252/Desktop/JetFactorial.csv', header = FALSE)
+a <- rep(c(-1,1),8)
+b <- rep(c(-1,-1,1,1),4)
+c <- rep(c(-1,-1,-1,-1,1,1,1,1),2)
+d <- c(rep(-1, 8), rep(1, 8))
+effects <- cbind(a,b,c,d, a*b,a*c,a*d, b*c,b*d, c*d)
+rownames(effects) <- jet$V1
+colnames(effects) <- c("a","b","c","d","ab","ac","ad","bc","bd","cd")
+effects
+```
+
+b.) We then estimate the treatment factor effects, including both main effects and all interactions up to the 4-way effect.
+```{r}
+main_effects <- (1/16) * (t(effects) %*% (jet$V2 + jet$V3))
+main_effects
+```
+```{r}
+effects2 <- cbind(a*b*c,a*b*d, a*c*d, b*c*d,a*b*c*d)
+colnames(effects2) <- c("abc","abd","acd","bcd","abcd")
+interactions_to_4_way <- (1/16) * (t(effects2) %*% (jet$V2 + jet$V3))
+interactions_to_4_way
+```
+
+c.) To determine which effects and interactions are significant in modeling the performance of the production process, we run an ANOVA.
+```{r}
+a2 <- rep(a,2)
+b2 <- rep(b,2)
+c2 <- rep(c,2)
+d2<-rep(d,2)
+summary(aov(c(jet$V2, jet$V3) ~ (a2+b2+c2+d2)^4))
+```
+From our output, we can see that the interaction between a2, b2, and c2 is statistically significant; since its p-value of 9.49e-16 is less than our $\alpha$ level 0.05, we reject H0.
+
+d.)
+As for further investigation, we should continue to look at B and C factors, as well as the three-way interaction between A, B, and C, because they had the largest F-values out of the 4 different factors, so they would have the most statistically significant impacts on the jet engine production results. 
+
+
+3.)
+To determine the ideal hole shape and treatment, we use a factorial model to analyze this data.
+```{r}
+vals <- c(9, 43, 60, 77, 13, 48, 65, 70, 12, 57, 70, 91, 15, 66, 75, 97, 13, 58, 78, 108, 20, 73, 90, 99)
+acid <- as.factor(c(rep("Yes",12), rep("No",12)))
+hole <- as.factor(rep(c('Circle', 'Diagonal','Check','Rectangle'), 6))
+
+pine_data <- data.frame(hole, acid, vals)
+pine_fit <- aov(vals ~ hole * acid, pine_data)
+summary(pine_fit) 
+```
+From our output, we can see that the interaction between hole shape and acid treatment is not statistically significant; since its p-value 0.196 is less than our $\alpha$ level 0.05, we fail to reject H0. 
+
+We then use an interaction plot to examine how the interaction between hole shape and acid treatment impacts the amount of resin collected.
+```{r}
+interaction.plot(pine_data$hole, pine_data$acid, pine_data$vals, xlab = "Hole Shape", ylab = "Resin collected", main = "Shape and Acid Treatment Interaction on Resin Amount ")
+```
+From our interaction plot, we see that the ideal hole shape would be a rectangle and that there should be no acid treatment in order to maximize the amount of resin that gets collected.

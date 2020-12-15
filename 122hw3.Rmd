@@ -1,0 +1,32 @@
+---
+title: "122hw3"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+2.)
+b.)
+```{r}
+E_val<- (4*4)/(3*5)
+Qi_bar <- 14-((1/4)*(0+12.75+13+12.25+9.75))
+alpha_i <- E_val * Qi_bar
+alpha_i
+```
+
+
+c.)
+```{r}
+additives = as.factor(c('B','C','D','E','A','C','D','E','A','B','D','E','A','B','C','E','A','B','C','D'))
+trts = as.factor(c(rep(1,4), rep(2,4), rep(3,4),rep(4,4),rep(5,4)))
+resp = c(17,14,13,12,14,14,13,10,12,13,12,9,13,11,12,8,11,10,12,11)
+gas_fit <- lm(resp~additives + trts)
+anova(gas_fit)
+```
+From our ANOVA table, we see that the p-value for additives is less than $\alpha$ 0.05, so we reject H0 and conclude that there is a significant difference between the additives. 
